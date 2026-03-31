@@ -103,7 +103,7 @@ export default function InterviewRoom({ params }: { params: Promise<{ id: string
              
              // Update WPM & Fillers on User's final transcript
              if (message.role === 'user') {
-                const words = message.transcript.trim().split(/\s+/).filter(w => w.length > 0).length
+                const words = message.transcript.trim().split(/\s+/).filter((w: string) => w.length > 0).length
                 setTotalWordsTracker(prev => prev + words)
                 
                 const fillers = message.transcript.toLowerCase().match(/\b(um|uh|like|you know|sort of|kind of)\b/g)
