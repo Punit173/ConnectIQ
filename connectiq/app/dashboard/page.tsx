@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useEffect, useState } from 'react'
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 import { 
   BarChart2, 
   MessageCircle, 
@@ -9,10 +9,16 @@ import {
   TrendingUp, 
   Clock, 
   CheckCircle,
-  PlayCircle
+  PlayCircle,
+  Activity,
+  X,
+  FileText,
+  AlertCircle
 } from 'lucide-react'
 import { createClient } from '@/utils/supabase/client'
 import Link from 'next/link'
+import ReactMarkdown from 'react-markdown'
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, BarChart, Bar } from 'recharts'
 
 interface UserStats {
   interviewsCompleted: number
@@ -50,6 +56,7 @@ export default function DashboardPage() {
     hoursPracticed: 0,
   })
   const [recentInterviews, setRecentInterviews] = useState<any[]>([])
+  const [selectedSession, setSelectedSession] = useState<any | null>(null)
   const supabase = createClient()
 
   useEffect(() => {
@@ -101,7 +108,51 @@ export default function DashboardPage() {
   )
 
   return (
-    <div className="space-y-8">
+    <>
+      <AnimatePresence>
+        {selectedSession && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm"
+          >
+            <motion.div 
+              initial={{ scale: 0.95, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.95, y: 20 }}
+              className="w-full max-w-4xl bg-card border border-border rounded-3xl shadow-2xl overflow-hidden max-h-[90vh] flex flex-col"
+            >
+              <div className="flex items-center justify-between p-6 border-b border-border bg-secondary/20">
+                <h2 className="text-2xl font-bold flex items-center gap-2">
+                  <FileText className="w-6 h-6 text-primary" />
+                  Interview Report ({selectedSession.role ? selectedSession.role.replace('-', ' ') : 'Practice'})
+                </h2>
+                <button 
+                  onClick={() => setSelectedSession(null)}
+                  className="p-2 hover:bg-secondary rounded-full transition-colors"
+                >
+                  <X className="w-6 h-6" />
+                </button>
+              </div>
+              <div className="p-6 overflow-y-auto">
+                {selectedSession.report ? (
+                  <div className="prose prose-invert prose-emerald max-w-none">
+                    <ReactMarkdown>{selectedSession.report}</ReactMarkdown>
+                  </div>
+                ) : (
+                  <div className="text-center py-12 text-muted-foreground">
+                    <AlertCircle className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                    <p>No detailed AI report was generated for this session.</p>
+                  </div>
+                )}
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <div className="space-y-8">
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
@@ -151,6 +202,47 @@ export default function DashboardPage() {
         />
       </div>
 
+      {/* Analytics Charts */}
+      {recentInterviews.length > 0 && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <div className="bg-card/50 backdrop-blur-sm border border-border/50 rounded-2xl p-6 shadow-sm">
+             <h2 className="text-lg font-semibold flex items-center gap-2 mb-6">
+                <Activity className="w-5 h-5 text-primary" />
+                Speech Pace Trend (WPM)
+             </h2>
+             <div className="h-64 w-full">
+               <ResponsiveContainer width="100%" height="100%">
+                 <LineChart data={[...recentInterviews].reverse()}>
+                   <CartesianGrid strokeDasharray="3 3" stroke="#333" vertical={false} />
+                   <XAxis dataKey="created_at" tickFormatter={(val) => new Date(val).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} stroke="#888" fontSize={12} />
+                   <YAxis stroke="#888" fontSize={12} />
+                   <RechartsTooltip contentStyle={{ backgroundColor: '#000', borderColor: '#333', borderRadius: '8px' }} />
+                   <Line type="monotone" dataKey="average_wpm" stroke="#10b981" strokeWidth={3} dot={{ fill: '#10b981', strokeWidth: 2 }} activeDot={{ r: 8 }} />
+                 </LineChart>
+               </ResponsiveContainer>
+             </div>
+          </div>
+          
+          <div className="bg-card/50 backdrop-blur-sm border border-border/50 rounded-2xl p-6 shadow-sm">
+             <h2 className="text-lg font-semibold flex items-center gap-2 mb-6">
+                <BarChart2 className="w-5 h-5 text-destructive" />
+                Filler Words Count
+             </h2>
+             <div className="h-64 w-full">
+               <ResponsiveContainer width="100%" height="100%">
+                 <BarChart data={[...recentInterviews].reverse()}>
+                   <CartesianGrid strokeDasharray="3 3" stroke="#333" vertical={false} />
+                   <XAxis dataKey="created_at" tickFormatter={(val) => new Date(val).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} stroke="#888" fontSize={12} />
+                   <YAxis stroke="#888" fontSize={12} />
+                   <RechartsTooltip contentStyle={{ backgroundColor: '#000', borderColor: '#333', borderRadius: '8px' }} cursor={{ fill: 'rgba(255,255,255,0.05)' }} />
+                   <Bar dataKey="total_filler_words" fill="#ef4444" radius={[4, 4, 0, 0]} />
+                 </BarChart>
+               </ResponsiveContainer>
+             </div>
+          </div>
+        </div>
+      )}
+
       {/* Recent Activity & Recommendations */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Recent Activity */}
@@ -164,7 +256,11 @@ export default function DashboardPage() {
               recentInterviews.map((session, i) => {
                 const date = new Date(session.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
                 return (
-                  <div key={session.id || i} className="p-4 rounded-xl border border-border bg-card/50 hover:bg-secondary/30 transition-colors flex flex-col md:flex-row md:items-center justify-between group cursor-pointer space-y-4 md:space-y-0">
+                  <div 
+                    key={session.id || i} 
+                    onClick={() => setSelectedSession(session)}
+                    className="p-4 rounded-xl border border-border bg-card/50 hover:bg-secondary/30 transition-colors flex flex-col md:flex-row md:items-center justify-between group cursor-pointer space-y-4 md:space-y-0"
+                  >
                     <div className="flex items-center gap-4">
                       <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold uppercase shrink-0">
                         {session.role ? session.role.substring(0, 2) : 'AI'}
@@ -226,6 +322,7 @@ export default function DashboardPage() {
           )}
         </div>
       </div>
-    </div>
+      </div>
+    </>
   )
 }

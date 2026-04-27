@@ -10,8 +10,16 @@ import {
   StopCircle,
   Volume2,
   AlertCircle,
-  Briefcase
+  Briefcase,
+  FileText,
+  Download,
+  ArrowRight
 } from 'lucide-react'
+import ReactMarkdown from 'react-markdown'
+import { 
+  PieChart, Pie, Cell, ResponsiveContainer, 
+  RadarChart, PolarGrid, PolarAngleAxis, Radar, Tooltip, Legend 
+} from 'recharts'
 import { FilesetResolver, FaceLandmarker } from '@mediapipe/tasks-vision'
 import { createClient } from '@/utils/supabase/client'
 import Vapi from '@vapi-ai/web'
@@ -77,6 +85,12 @@ export default function InterviewRoom({ params }: { params: Promise<{ id: string
   const audioContextRef = useRef<AudioContext | null>(null)
   const analyserRef = useRef<AnalyserNode | null>(null)
   const audioReqRef = useRef<number>(0)
+
+  // Report State
+  const [isFinished, setIsFinished] = useState(false)
+  const [isGeneratingReport, setIsGeneratingReport] = useState(false)
+  const [report, setReport] = useState<string | null>(null)
+  const [sessionId, setSessionId] = useState<string | null>(null)
 
   // Initialize Vapi Instance
   useEffect(() => {
@@ -340,7 +354,7 @@ export default function InterviewRoom({ params }: { params: Promise<{ id: string
     const supabase = createClient()
     const { data: { user } } = await supabase.auth.getUser()
     if (user) {
-      await supabase.from('interview_sessions').insert({
+      const { data, error } = await supabase.from('interview_sessions').insert({
         user_id: user.id,
         role: role,
         experience_level: experienceLevel,
@@ -349,10 +363,51 @@ export default function InterviewRoom({ params }: { params: Promise<{ id: string
         total_filler_words: fillerWords,
         average_pitch: pitch,
         dominant_emotion: currentEmotion
-      })
+      }).select().single()
+
+      if (data) {
+        setSessionId(data.id)
+      }
     }
 
-    router.push('/dashboard')
+    setIsFinished(true)
+  }
+
+  const handleGenerateReport = async () => {
+    setIsGeneratingReport(true)
+    const resume = typeof window !== 'undefined' ? sessionStorage.getItem('interview_resume') || '' : ''
+    
+    try {
+      const res = await fetch('/api/report', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          role,
+          messages,
+          wpm,
+          fillerWords,
+          emotion: currentEmotion,
+          duration: timer.seconds,
+          resume
+        })
+      })
+      const data = await res.json()
+      if (data.report) {
+        setReport(data.report)
+        // Store report in DB if session exists
+        if (sessionId) {
+          const supabase = createClient()
+          await supabase.from('interview_sessions').update({ report: data.report }).eq('id', sessionId)
+        }
+      } else {
+        setAlertMessage("Failed to generate report.")
+      }
+    } catch (err) {
+      console.error(err)
+      setAlertMessage("Error generating report.")
+    } finally {
+      setIsGeneratingReport(false)
+    }
   }
 
   // Strict Full Screen Enforcement
@@ -416,6 +471,158 @@ export default function InterviewRoom({ params }: { params: Promise<{ id: string
         >
           Resume Interview
         </button>
+      </div>
+    )
+  }
+
+  // Post-Interview Report Screen
+  if (isFinished) {
+    const wpmScore = Math.min(100, Math.max(0, 100 - Math.abs(wpm - 130)));
+    const fillerScore = Math.max(0, 100 - (fillerWords * 5));
+    let sentimentScore = 50;
+    if (currentEmotion === 'Happy / Confident') sentimentScore = 90;
+    if (currentEmotion === 'Nervous') sentimentScore = 30;
+    if (currentEmotion === 'Thinking / Tense') sentimentScore = 70;
+
+    const radarData = [
+      { subject: 'Pace', A: wpmScore, fullMark: 100 },
+      { subject: 'Clarity', A: fillerScore, fullMark: 100 },
+      { subject: 'Confidence', A: sentimentScore, fullMark: 100 },
+      { subject: 'Timing', A: Math.min(100, (timer.seconds / 600) * 100), fullMark: 100 }
+    ];
+
+    const pieData = [
+      { name: 'Core Words', value: Math.max(1, totalWordsTracker - fillerWords) },
+      { name: 'Fillers', value: fillerWords }
+    ];
+    const PIE_COLORS = ['#10b981', '#ef4444'];
+
+    return (
+      <div className="min-h-screen p-4 md:p-8 flex flex-col items-center justify-start bg-background/50 max-w-5xl mx-auto space-y-8">
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="text-center space-y-4 w-full"
+        >
+          <div className="inline-flex items-center justify-center p-4 bg-emerald-500/10 rounded-full mb-4">
+            <StopCircle className="w-12 h-12 text-emerald-500" />
+          </div>
+          <h1 className="text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-emerald-400 to-teal-400">
+            Interview Completed
+          </h1>
+          <p className="text-xl text-muted-foreground">Great job! Your session has been securely saved.</p>
+        </motion.div>
+
+        {!report ? (
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="w-full max-w-4xl bg-card/50 backdrop-blur-md border border-border rounded-3xl p-8 shadow-2xl text-center space-y-8"
+          >
+             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+                <div className="p-4 bg-background/50 rounded-2xl border border-border">
+                  <div className="text-2xl font-bold text-foreground">{wpm}</div>
+                  <div className="text-xs text-muted-foreground uppercase tracking-wider mt-1">WPM</div>
+                </div>
+                <div className="p-4 bg-background/50 rounded-2xl border border-border">
+                  <div className="text-2xl font-bold text-destructive">{fillerWords}</div>
+                  <div className="text-xs text-muted-foreground uppercase tracking-wider mt-1">Fillers</div>
+                </div>
+                <div className="p-4 bg-background/50 rounded-2xl border border-border">
+                  <div className="text-2xl font-bold text-primary">{Math.round(timer.seconds / 60)}m</div>
+                  <div className="text-xs text-muted-foreground uppercase tracking-wider mt-1">Duration</div>
+                </div>
+                <div className="p-4 bg-background/50 rounded-2xl border border-border">
+                  <div className="text-lg font-bold text-foreground truncate">{currentEmotion}</div>
+                  <div className="text-xs text-muted-foreground uppercase tracking-wider mt-1">Mood</div>
+                </div>
+             </div>
+
+             <div className="grid md:grid-cols-2 gap-8 mb-8">
+               <div className="h-64 bg-background/50 rounded-2xl border border-border p-4 flex flex-col items-center relative">
+                 <h3 className="text-sm font-semibold text-muted-foreground mb-2">Performance Radar</h3>
+                 <ResponsiveContainer width="100%" height="100%">
+                   <RadarChart cx="50%" cy="50%" outerRadius="65%" data={radarData}>
+                     <PolarGrid stroke="#333" />
+                     <PolarAngleAxis dataKey="subject" tick={{ fill: '#888', fontSize: 12 }} />
+                     <Radar name="Score" dataKey="A" stroke="#10b981" fill="#10b981" fillOpacity={0.4} />
+                     <Tooltip contentStyle={{ backgroundColor: '#000', borderColor: '#333', borderRadius: '8px' }} itemStyle={{ color: '#10b981' }} />
+                   </RadarChart>
+                 </ResponsiveContainer>
+               </div>
+               <div className="h-64 bg-background/50 rounded-2xl border border-border p-4 flex flex-col items-center relative">
+                 <h3 className="text-sm font-semibold text-muted-foreground mb-2">Speech Composition</h3>
+                 <ResponsiveContainer width="100%" height="100%">
+                   <PieChart>
+                     <Pie
+                       data={pieData}
+                       cx="50%"
+                       cy="50%"
+                       innerRadius={60}
+                       outerRadius={80}
+                       paddingAngle={5}
+                       dataKey="value"
+                     >
+                       {pieData.map((entry, index) => (
+                         <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />
+                       ))}
+                     </Pie>
+                     <Tooltip contentStyle={{ backgroundColor: '#000', borderColor: '#333', borderRadius: '8px' }} />
+                     <Legend verticalAlign="bottom" height={36} iconType="circle" />
+                   </PieChart>
+                 </ResponsiveContainer>
+               </div>
+             </div>
+
+             <div className="space-y-4">
+               <button
+                 onClick={handleGenerateReport}
+                 disabled={isGeneratingReport}
+                 className="w-full md:w-auto px-8 py-4 bg-primary hover:bg-primary/90 text-primary-foreground font-bold rounded-full text-lg shadow-xl hover:shadow-primary/20 transition-all hover:scale-105 disabled:opacity-50 disabled:hover:scale-100 flex items-center justify-center gap-3 mx-auto"
+               >
+                 {isGeneratingReport ? (
+                   <>
+                     <div className="w-5 h-5 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin" />
+                     Analyzing Performance...
+                   </>
+                 ) : (
+                   <>
+                     <FileText className="w-6 h-6" />
+                     Generate Detailed Report
+                   </>
+                 )}
+               </button>
+               <button
+                 onClick={() => router.push('/dashboard')}
+                 className="w-full md:w-auto px-8 py-4 text-muted-foreground hover:text-foreground font-medium transition-colors"
+               >
+                 Return to Dashboard
+               </button>
+             </div>
+          </motion.div>
+        ) : (
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="w-full bg-card/80 backdrop-blur-xl border border-border rounded-3xl p-6 md:p-10 shadow-2xl space-y-8"
+          >
+             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-border pb-6">
+               <h2 className="text-2xl font-bold flex items-center gap-3">
+                 <FileText className="w-6 h-6 text-primary" />
+                 Performance Analysis
+               </h2>
+               <div className="flex gap-4">
+                  <button onClick={() => router.push('/dashboard')} className="px-6 py-2.5 bg-secondary hover:bg-secondary/80 text-secondary-foreground font-semibold rounded-xl transition-colors flex items-center gap-2">
+                    Dashboard <ArrowRight className="w-4 h-4" />
+                  </button>
+               </div>
+             </div>
+             
+             <div className="prose prose-invert prose-emerald max-w-none">
+               <ReactMarkdown>{report}</ReactMarkdown>
+             </div>
+          </motion.div>
+        )}
       </div>
     )
   }

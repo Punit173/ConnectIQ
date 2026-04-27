@@ -1,8 +1,8 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { LayoutDashboard, Users, MessageSquareText, Settings, LogOut, ChevronRight, Menu, X, Code2 } from 'lucide-react'
+import { LayoutDashboard, Users, MessageSquareText, Settings, LogOut, ChevronRight, Menu, X, Code2, User } from 'lucide-react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { createClient } from '@/utils/supabase/client'
@@ -10,7 +10,7 @@ import { useRouter } from 'next/navigation'
 
 const sidebarItems = [
   { icon: LayoutDashboard, label: 'Dashboard', href: '/dashboard' },
-  { icon: MessageSquareText, label: 'Interview', href: '/dashboard/interview/setup' },
+  { icon: MessageSquareText, label: 'Interview', href: '/dashboard/interview' },
   { icon: Code2, label: 'Tech Round', href: '/dashboard/coding' },
   { icon: Users, label: 'Community', href: '/dashboard/community' },
   { icon: Settings, label: 'Settings', href: '/dashboard/settings' },
@@ -22,9 +22,20 @@ export default function DashboardLayout({
   children: React.ReactNode
 }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true)
+  const [userEmail, setUserEmail] = useState<string | null>(null)
   const pathname = usePathname()
   const router = useRouter()
   const supabase = createClient()
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (user) {
+        setUserEmail(user.email || 'User')
+      }
+    }
+    fetchUser()
+  }, [])
 
   const handleSignOut = async () => {
     await supabase.auth.signOut()
@@ -87,12 +98,18 @@ export default function DashboardLayout({
           })}
         </nav>
 
-        <div className="p-4 border-t border-border">
+        <div className="p-4 border-t border-border space-y-2">
+          {userEmail && (
+            <div className={`flex items-center px-4 py-3 rounded-xl bg-secondary/30 text-sm overflow-hidden ${!isSidebarOpen && 'justify-center'}`}>
+              <User className={`w-5 h-5 flex-shrink-0 text-primary ${isSidebarOpen ? 'mr-3' : ''}`} />
+              {isSidebarOpen && <span className="truncate text-muted-foreground font-medium">{userEmail}</span>}
+            </div>
+          )}
           <button
             onClick={handleSignOut}
             className={`flex items-center w-full px-4 py-3 text-red-500 hover:bg-red-500/10 rounded-xl transition-colors ${!isSidebarOpen && 'justify-center'}`}
           >
-            <LogOut className={`w-5 h-5 ${isSidebarOpen ? 'mr-3' : ''}`} />
+            <LogOut className={`w-5 h-5 flex-shrink-0 ${isSidebarOpen ? 'mr-3' : ''}`} />
             {isSidebarOpen && <span>Sign Out</span>}
           </button>
         </div>
