@@ -36,51 +36,27 @@
 
 @layer base {
   :root {
-    --background: #ffffff;
-    --foreground: #09090b;
-    --card: #ffffff;
-    --card-foreground: #09090b;
-    --popover: #ffffff;
-    --popover-foreground: #09090b;
-    --primary: #7c3aed;
-    --primary-foreground: #fafafa;
-    --secondary: #f4f4f5;
-    --secondary-foreground: #18181b;
-    --muted: #f4f4f5;
-    --muted-foreground: #71717a;
-    --accent: #f4f4f5;
-    --accent-foreground: #18181b;
+    /* Premium Dark Theme by Default */
+    --background: #050505;
+    --foreground: #fafafa;
+    --card: #09090b;
+    --card-foreground: #fafafa;
+    --popover: #09090b;
+    --popover-foreground: #fafafa;
+    --primary: #8b5cf6; /* Violet-500 */
+    --primary-foreground: #ffffff;
+    --secondary: #18181b;
+    --secondary-foreground: #fafafa;
+    --muted: #27272a;
+    --muted-foreground: #a1a1aa;
+    --accent: #27272a;
+    --accent-foreground: #fafafa;
     --destructive: #ef4444;
     --destructive-foreground: #fafafa;
-    --border: #e4e4e7;
-    --input: #e4e4e7;
-    --ring: #7c3aed;
-    --radius: 0.5rem;
-  }
-
-  /* Default to Dark Mode styles (using class .dark or media query if system preference, but user wanted dark vibes so we might force dark or default to it) */
-  @media (prefers-color-scheme: dark) {
-    :root {
-      --background: #09090b;
-      --foreground: #fafafa;
-      --card: #09090b;
-      --card-foreground: #fafafa;
-      --popover: #09090b;
-      --popover-foreground: #fafafa;
-      --primary: #8b5cf6; /* Violet-500 */
-      --primary-foreground: #fafafa;
-      --secondary: #27272a;
-      --secondary-foreground: #fafafa;
-      --muted: #27272a;
-      --muted-foreground: #a1a1aa;
-      --accent: #27272a;
-      --accent-foreground: #fafafa;
-      --destructive: #7f1d1d;
-      --destructive-foreground: #fafafa;
-      --border: #27272a;
-      --input: #27272a;
-      --ring: #8b5cf6;
-    }
+    --border: #27272a;
+    --input: #27272a;
+    --ring: #8b5cf6;
+    --radius: 1rem;
   }
 }
 
@@ -89,6 +65,26 @@
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-background text-foreground font-sans antialiased;
+    @apply bg-background text-foreground font-sans antialiased selection:bg-primary/30 selection:text-primary-foreground;
+    background-image: 
+      radial-gradient(circle at 15% 50%, rgba(139, 92, 246, 0.04), transparent 25%),
+      radial-gradient(circle at 85% 30%, rgba(16, 185, 129, 0.04), transparent 25%);
+    background-attachment: fixed;
+  }
+
+  /* Custom Scrollbar for a premium feel */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #3f3f46;
+    border-radius: 4px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #52525b;
   }
 }

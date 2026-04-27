@@ -498,49 +498,52 @@ export default function InterviewRoom({ params }: { params: Promise<{ id: string
     const PIE_COLORS = ['#10b981', '#ef4444'];
 
     return (
-      <div className="min-h-screen p-4 md:p-8 flex flex-col items-center justify-start bg-background/50 max-w-5xl mx-auto space-y-8">
+      <div className="min-h-screen p-4 md:p-8 flex flex-col items-center justify-start max-w-5xl mx-auto space-y-8">
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="text-center space-y-4 w-full"
+          className="text-center space-y-4 w-full pt-8"
         >
-          <div className="inline-flex items-center justify-center p-4 bg-emerald-500/10 rounded-full mb-4">
-            <StopCircle className="w-12 h-12 text-emerald-500" />
-          </div>
-          <h1 className="text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-emerald-400 to-teal-400">
-            Interview Completed
+          <motion.div 
+            initial={{ scale: 0.5 }} animate={{ scale: 1 }} transition={{ type: 'spring', bounce: 0.4 }}
+            className="w-20 h-20 rounded-3xl bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center mx-auto mb-4 shadow-2xl shadow-emerald-500/30"
+          >
+            <StopCircle className="w-10 h-10 text-white" />
+          </motion.div>
+          <h1 className="text-4xl font-bold tracking-tight">
+            Interview <span className="bg-clip-text text-transparent bg-gradient-to-r from-emerald-400 to-teal-400">Completed</span>
           </h1>
-          <p className="text-xl text-muted-foreground">Great job! Your session has been securely saved.</p>
+          <p className="text-lg text-muted-foreground">Great job! Your session has been securely saved.</p>
         </motion.div>
 
         {!report ? (
           <motion.div 
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="w-full max-w-4xl bg-card/50 backdrop-blur-md border border-border rounded-3xl p-8 shadow-2xl text-center space-y-8"
+            className="w-full max-w-4xl bg-card/30 backdrop-blur-2xl border border-border/40 rounded-3xl p-8 shadow-2xl text-center space-y-8"
           >
              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-                <div className="p-4 bg-background/50 rounded-2xl border border-border">
-                  <div className="text-2xl font-bold text-foreground">{wpm}</div>
-                  <div className="text-xs text-muted-foreground uppercase tracking-wider mt-1">WPM</div>
+                <div className="p-5 bg-background/40 rounded-3xl border border-border/30 backdrop-blur-xl">
+                  <div className="text-3xl font-bold text-foreground">{wpm}</div>
+                  <div className="text-[11px] text-muted-foreground uppercase tracking-[0.15em] mt-1.5 font-semibold">WPM</div>
                 </div>
-                <div className="p-4 bg-background/50 rounded-2xl border border-border">
-                  <div className="text-2xl font-bold text-destructive">{fillerWords}</div>
-                  <div className="text-xs text-muted-foreground uppercase tracking-wider mt-1">Fillers</div>
+                <div className="p-5 bg-background/40 rounded-3xl border border-red-500/20">
+                  <div className="text-3xl font-bold text-red-400">{fillerWords}</div>
+                  <div className="text-[11px] text-muted-foreground uppercase tracking-[0.15em] mt-1.5 font-semibold">Fillers</div>
                 </div>
-                <div className="p-4 bg-background/50 rounded-2xl border border-border">
-                  <div className="text-2xl font-bold text-primary">{Math.round(timer.seconds / 60)}m</div>
-                  <div className="text-xs text-muted-foreground uppercase tracking-wider mt-1">Duration</div>
+                <div className="p-5 bg-background/40 rounded-3xl border border-primary/20">
+                  <div className="text-3xl font-bold text-primary">{Math.round(timer.seconds / 60)}m</div>
+                  <div className="text-[11px] text-muted-foreground uppercase tracking-[0.15em] mt-1.5 font-semibold">Duration</div>
                 </div>
-                <div className="p-4 bg-background/50 rounded-2xl border border-border">
+                <div className="p-5 bg-background/40 rounded-3xl border border-border/30 backdrop-blur-xl">
                   <div className="text-lg font-bold text-foreground truncate">{currentEmotion}</div>
-                  <div className="text-xs text-muted-foreground uppercase tracking-wider mt-1">Mood</div>
+                  <div className="text-[11px] text-muted-foreground uppercase tracking-[0.15em] mt-1.5 font-semibold">Mood</div>
                 </div>
              </div>
 
-             <div className="grid md:grid-cols-2 gap-8 mb-8">
-               <div className="h-64 bg-background/50 rounded-2xl border border-border p-4 flex flex-col items-center relative">
-                 <h3 className="text-sm font-semibold text-muted-foreground mb-2">Performance Radar</h3>
+             <div className="grid md:grid-cols-2 gap-6 mb-8">
+               <div className="h-64 bg-background/30 rounded-3xl border border-border/30 backdrop-blur-xl p-5 flex flex-col items-center relative">
+                 <h3 className="text-xs font-semibold text-muted-foreground mb-2 uppercase tracking-[0.15em]">Performance Radar</h3>
                  <ResponsiveContainer width="100%" height="100%">
                    <RadarChart cx="50%" cy="50%" outerRadius="65%" data={radarData}>
                      <PolarGrid stroke="#333" />
@@ -550,8 +553,8 @@ export default function InterviewRoom({ params }: { params: Promise<{ id: string
                    </RadarChart>
                  </ResponsiveContainer>
                </div>
-               <div className="h-64 bg-background/50 rounded-2xl border border-border p-4 flex flex-col items-center relative">
-                 <h3 className="text-sm font-semibold text-muted-foreground mb-2">Speech Composition</h3>
+               <div className="h-64 bg-background/30 rounded-3xl border border-border/30 backdrop-blur-xl p-5 flex flex-col items-center relative">
+                 <h3 className="text-xs font-semibold text-muted-foreground mb-2 uppercase tracking-[0.15em]">Speech Composition</h3>
                  <ResponsiveContainer width="100%" height="100%">
                    <PieChart>
                      <Pie
@@ -628,7 +631,7 @@ export default function InterviewRoom({ params }: { params: Promise<{ id: string
   }
 
   return (
-    <div className="min-h-screen p-4 md:p-6 flex flex-col gap-6 relative max-w-[1600px] mx-auto">
+    <div className="min-h-screen p-3 md:p-5 flex flex-col gap-5 relative max-w-[1600px] mx-auto">
       {/* Code Editor Modal/Overlay */}
       <AnimatePresence>
         {isCoding && (
@@ -667,7 +670,7 @@ export default function InterviewRoom({ params }: { params: Promise<{ id: string
       <div className="flex flex-col md:flex-row gap-6 h-[calc(100vh-140px)] w-full">
         {/* Left Panel: Video Feed & Real-time Feedback & Telemetry */}
         <div className="flex-1 flex flex-col gap-4 relative max-h-screen">
-          <div className="relative flex-1 bg-black rounded-3xl overflow-hidden shadow-2xl border border-border/50 min-h-[40vh]">
+          <div className="relative flex-1 bg-black rounded-3xl overflow-hidden shadow-2xl shadow-black/50 border border-border/30 min-h-[40vh]">
             <video 
               ref={videoRef}
               muted
@@ -704,14 +707,18 @@ export default function InterviewRoom({ params }: { params: Promise<{ id: string
             </div>
 
             {!hasStarted && (
-              <div className="absolute inset-0 bg-black/60 flex items-center justify-center p-6 text-center z-10 backdrop-blur-sm">
-                <motion.div>
-                  <h2 className="text-3xl font-bold text-white mb-2">Ready to Start?</h2>
-                  <p className="text-gray-300 mb-8">You are applying for: <span className="text-primary font-bold uppercase">{role}</span></p>
+              <div className="absolute inset-0 bg-black/70 flex items-center justify-center p-6 text-center z-10 backdrop-blur-md">
+                <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="space-y-6">
+                  <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary to-purple-500 flex items-center justify-center mx-auto shadow-2xl shadow-primary/30">
+                    <Mic className="w-8 h-8 text-white" />
+                  </div>
+                  <h2 className="text-3xl font-bold text-white">Ready to Start?</h2>
+                  <p className="text-gray-400">Applying for: <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-purple-400 font-bold uppercase">{role.replace('-', ' ')}</span></p>
                   <button 
                     onClick={handleStartInterview}
-                    className="px-8 py-4 bg-red-600 hover:bg-red-700 text-white rounded-full font-bold shadow-xl shadow-red-500/30 transition-all transform hover:scale-105 text-lg"
+                    className="px-10 py-4 bg-gradient-to-r from-red-600 to-rose-500 text-white rounded-2xl font-bold shadow-2xl shadow-red-500/30 transition-all transform hover:scale-105 active:scale-95 text-lg flex items-center gap-3 mx-auto"
                   >
+                    <Mic className="w-5 h-5" />
                     Start Call with AI
                   </button>
                 </motion.div>
@@ -736,61 +743,57 @@ export default function InterviewRoom({ params }: { params: Promise<{ id: string
           </div>
 
           {/* Real-time Telemetry Grid */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            {/* Emotion */}
-            <div className="bg-card/50 backdrop-blur-md border border-border/50 rounded-2xl p-4 flex flex-col">
-              <span className="text-xs text-muted-foreground font-semibold mb-1 uppercase tracking-wider">Facial Emotion</span>
-              <div className="text-lg font-bold text-foreground truncate">{currentEmotion}</div>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+            <div className="bg-card/30 backdrop-blur-2xl border border-border/30 rounded-2xl p-4 flex flex-col">
+              <span className="text-[10px] text-muted-foreground font-semibold mb-1.5 uppercase tracking-[0.15em]">Facial Emotion</span>
+              <div className="text-base font-bold text-foreground truncate">{currentEmotion}</div>
             </div>
-            {/* Pitch */}
-            <div className="bg-card/50 backdrop-blur-md border border-border/50 rounded-2xl p-4 flex flex-col">
-              <span className="text-xs text-muted-foreground font-semibold mb-1 uppercase tracking-wider">Est. Pitch (Hz)</span>
-              <div className="text-lg font-bold text-primary truncate">{pitch > 0 ? pitch.toFixed(0) : '--'}</div>
+            <div className="bg-card/30 backdrop-blur-2xl border border-border/30 rounded-2xl p-4 flex flex-col">
+              <span className="text-[10px] text-muted-foreground font-semibold mb-1.5 uppercase tracking-[0.15em]">Est. Pitch</span>
+              <div className="text-base font-bold text-primary truncate">{pitch > 0 ? `${pitch.toFixed(0)} Hz` : '--'}</div>
             </div>
-             {/* WPM */}
-             <div className="bg-card/50 backdrop-blur-md border border-border/50 rounded-2xl p-4 flex flex-col">
-              <span className="text-xs text-muted-foreground font-semibold mb-1 uppercase tracking-wider">Speech Pace</span>
-              <div className={`text-lg font-bold truncate ${wpm > 170 || (wpm > 0 && wpm < 100) ? 'text-orange-500' : 'text-foreground'}`}>
+            <div className="bg-card/30 backdrop-blur-2xl border border-border/30 rounded-2xl p-4 flex flex-col">
+              <span className="text-[10px] text-muted-foreground font-semibold mb-1.5 uppercase tracking-[0.15em]">Speech Pace</span>
+              <div className={`text-base font-bold truncate ${wpm > 170 || (wpm > 0 && wpm < 100) ? 'text-orange-400' : 'text-foreground'}`}>
                 {wpm > 0 ? `${wpm} WPM` : '--'}
               </div>
             </div>
-            {/* Filler Words */}
-            <div className="bg-card/50 backdrop-blur-md border border-border/50 rounded-2xl p-4 flex flex-col">
-              <span className="text-xs text-muted-foreground font-semibold mb-1 uppercase tracking-wider">Filler Words</span>
-              <div className="text-lg font-bold text-destructive truncate">{fillerWords} detected</div>
+            <div className="bg-card/30 backdrop-blur-2xl border border-border/30 rounded-2xl p-4 flex flex-col">
+              <span className="text-[10px] text-muted-foreground font-semibold mb-1.5 uppercase tracking-[0.15em]">Filler Words</span>
+              <div className="text-base font-bold text-red-400 truncate">{fillerWords} detected</div>
             </div>
           </div>
 
           {/* Real-time Insights Bar */}
-          <div className="bg-card/50 backdrop-blur-md border border-border/50 rounded-2xl p-4 flex items-center justify-between shadow-sm">
-            <div className="flex items-center gap-4">
-               <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
-                 <Volume2 className={`w-5 h-5 text-primary animate-pulse`} />
+          <div className="bg-card/30 backdrop-blur-2xl border border-border/30 rounded-2xl p-4 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+               <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary/20 to-purple-500/10 border border-primary/20 flex items-center justify-center">
+                 <Volume2 className="w-5 h-5 text-primary animate-pulse" />
                </div>
                <div>
-                 <h4 className="font-semibold text-sm text-foreground uppercase tracking-wider">AI Interviewer</h4>
-                 <p className="text-sm text-muted-foreground">Powered by VAPI</p>
+                 <h4 className="font-semibold text-sm">AI Interviewer</h4>
+                 <p className="text-[11px] text-muted-foreground">Powered by VAPI</p>
                </div>
             </div>
             <div className="text-right">
-               <div className="text-2xl font-mono tabular-nums font-bold">
+               <div className="text-2xl font-mono tabular-nums font-bold tracking-tight">
                  {String(Math.floor(timer.seconds / 60)).padStart(2, '0')}:
                  {String(timer.seconds % 60).padStart(2, '0')}
                </div>
-               <div className="text-xs text-muted-foreground">in session</div>
+               <div className="text-[10px] text-muted-foreground uppercase tracking-wider">in session</div>
             </div>
           </div>
         </div>
 
         {/* Right Panel: Conversation Log */}
-        <div className="w-full md:w-96 flex flex-col bg-card border border-border rounded-3xl overflow-hidden shadow-xl h-full">
-          <div className="p-4 border-b border-border bg-card/80 backdrop-blur-sm sticky top-0 z-10 flex justify-between items-center shadow-sm">
+        <div className="w-full md:w-96 flex flex-col bg-card/30 backdrop-blur-2xl border border-border/30 rounded-3xl overflow-hidden shadow-xl h-full">
+          <div className="p-4 border-b border-border/30 bg-gradient-to-r from-primary/5 to-transparent sticky top-0 z-10 flex justify-between items-center">
             <div>
-              <h3 className="font-bold flex items-center gap-2">
+              <h3 className="font-bold flex items-center gap-2 text-sm">
                 <Briefcase className="w-4 h-4 text-primary" />
-                {role.toUpperCase()}
+                <span className="capitalize">{role.replace('-', ' ')}</span>
               </h3>
-              <p className="text-xs text-muted-foreground">Live Transcription</p>
+              <p className="text-[11px] text-muted-foreground">Live Transcription</p>
             </div>
             {hasStarted && !isCoding && (
                <button 

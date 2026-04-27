@@ -65,13 +65,14 @@ export default function Home() {
       </nav>
 
       {/* Hero Section */}
-      <section className="relative pt-32 pb-20 md:pt-48 md:pb-32 px-6">
+      <section className="relative pt-32 pb-20 md:pt-48 md:pb-32 px-6 overflow-hidden">
         <div className="absolute inset-0 -z-10 overflow-hidden">
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[500px] bg-primary/20 rounded-full blur-[120px] opacity-50" />
-          <div className="absolute bottom-0 right-0 w-[800px] h-[600px] bg-purple-500/10 rounded-full blur-[100px] opacity-30" />
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[500px] bg-primary/20 rounded-full blur-[120px] opacity-60 animate-pulse" style={{ animationDuration: '4s' }} />
+          <div className="absolute bottom-[-10%] right-[-5%] w-[800px] h-[600px] bg-emerald-500/10 rounded-full blur-[120px] opacity-40" />
+          <div className="absolute top-[20%] left-[-10%] w-[600px] h-[600px] bg-purple-500/15 rounded-full blur-[100px] opacity-40" />
         </div>
         
-        <div className="max-w-5xl mx-auto text-center space-y-8">
+        <div className="max-w-5xl mx-auto text-center space-y-8 relative z-10">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -107,13 +108,13 @@ export default function Home() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.3 }}
-            className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4"
+            className="flex flex-col sm:flex-row items-center justify-center gap-6 pt-6"
           >
-            <Link href="/dashboard" className="px-8 py-4 rounded-full bg-primary text-primary-foreground text-lg font-semibold hover:bg-primary/90 transition-all shadow-xl shadow-primary/25 flex items-center group">
+            <Link href="/dashboard" className="px-8 py-4 rounded-full bg-gradient-to-r from-primary to-purple-500 text-white text-lg font-bold hover:shadow-[0_0_40px_rgba(139,92,246,0.4)] transition-all flex items-center group transform hover:scale-105 active:scale-95">
               Start Mock Interview
               <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
             </Link>
-            <Link href="#demo" className="px-8 py-4 rounded-full border border-white/10 bg-white/5 backdrop-blur-sm text-foreground text-lg font-semibold hover:bg-white/10 transition-colors">
+            <Link href="#demo" className="px-8 py-4 rounded-full border border-white/20 bg-white/5 backdrop-blur-md text-foreground text-lg font-semibold hover:bg-white/10 hover:border-white/30 transition-all transform hover:scale-105">
               Watch Demo
             </Link>
           </motion.div>
@@ -174,14 +175,15 @@ export default function Home() {
 function FeatureCard({ icon, title, description }: { icon: React.ReactNode, title: string, description: string }) {
   return (
     <motion.div 
-      whileHover={{ y: -5 }}
-      className="p-8 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-sm hover:border-primary/50 transition-colors"
+      whileHover={{ y: -5, scale: 1.02 }}
+      className="p-8 rounded-3xl bg-card/40 border border-border/50 backdrop-blur-xl hover:border-primary/50 transition-all duration-300 relative overflow-hidden group shadow-lg"
     >
-      <div className="mb-6 p-3 bg-white/5 rounded-xl inline-block">
+      <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+      <div className="mb-6 p-4 bg-background/50 rounded-2xl inline-block border border-border/50 shadow-inner relative z-10">
         {icon}
       </div>
-      <h3 className="text-xl font-bold mb-3">{title}</h3>
-      <p className="text-muted-foreground leading-relaxed">
+      <h3 className="text-xl font-bold mb-3 relative z-10">{title}</h3>
+      <p className="text-muted-foreground leading-relaxed relative z-10">
         {description}
       </p>
     </motion.div>
